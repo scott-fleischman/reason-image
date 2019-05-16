@@ -9,18 +9,12 @@ let draw = canvas => {
 
 [@react.component]
 let make = () => {
-  let canvas_id = "canvas";
   let canvasRef = React.useRef(Js.Nullable.null);
   React.useEffect(() =>
-    switch (ReactDOMRe._getElementById(canvas_id)) {
+    switch (Js.Nullable.to_opt(canvasRef->React.Ref.current)) {
     | None => failwith("fail")
     | Some(el) => draw(ReactDOMRe.domElementToObj(el))
     }
   );
-  <canvas
-    id=canvas_id
-    width="150"
-    height="150"
-    ref={ReactDOMRe.Ref.domRef(canvasRef)}
-  />;
+  <canvas width="150" height="150" ref={ReactDOMRe.Ref.domRef(canvasRef)} />;
 };
