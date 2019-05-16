@@ -10,11 +10,12 @@ let draw = canvas => {
 [@react.component]
 let make = () => {
   let canvasRef = React.useRef(Js.Nullable.null);
-  React.useEffect(() =>
-    switch (Js.Nullable.to_opt(canvasRef->React.Ref.current)) {
-    | None => failwith("fail")
-    | Some(el) => draw(ReactDOMRe.domElementToObj(el))
-    }
-  );
+  React.useEffect(() => {
+    switch (Js.Nullable.toOption(canvasRef->React.Ref.current)) {
+    | None => ()
+    | Some(canvas) => draw(ReactDOMRe.domElementToObj(canvas))
+    };
+    None;
+  });
   <canvas width="150" height="150" ref={ReactDOMRe.Ref.domRef(canvasRef)} />;
 };
