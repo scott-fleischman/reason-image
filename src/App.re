@@ -1,4 +1,4 @@
-let draw = canvas => {
+let draw = (canvas, image) => {
   let canvasWidth = canvas##width;
   let canvasHeight = canvas##height;
   let min50 = value => max(50, value - 50);
@@ -6,12 +6,8 @@ let draw = canvas => {
   let rectHeight = min50(canvasHeight);
   let context = canvas##getContext("2d");
   context##clearRect(0, 0, canvasWidth, canvasHeight);
+  context##drawImage(image, 0, 0);
 
-  context##fillStyle #= "rgb(200, 0, 0)";
-  context##fillRect(10, 10, rectWidth, rectHeight);
-
-  context##fillStyle #= "rgba(0, 0, 200, 0.5)";
-  context##fillRect(30, 30, rectWidth, rectHeight);
   print_endline(
     "draw(width:"
     ++ string_of_int(canvasWidth)
@@ -25,6 +21,8 @@ type windowSize = {
   width: int,
   height: int,
 };
+
+let imageSource: string = "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/1280px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg";
 
 [@bs.val] external window: Dom.window = "";
 external windowToJsObj: Dom.window => Js.t({..}) = "%identity";
@@ -50,10 +48,15 @@ let getWindowSize = () => {
 let make = () => {
   let (windowSize, setWindowSize) = React.useState(getWindowSize);
   let canvasRef = React.useRef(Js.Nullable.null);
+  let imageRef = React.useRef(Js.Nullable.null);
   let drawOnCanvas = () =>
-    switch (Js.Nullable.toOption(canvasRef->React.Ref.current)) {
-    | None => ()
-    | Some(canvas) => draw(ReactDOMRe.domElementToObj(canvas))
+    switch (
+      Js.Nullable.toOption(canvasRef->React.Ref.current),
+      Js.Nullable.toOption(imageRef->React.Ref.current),
+    ) {
+    | (Some(canvas), Some(image)) =>
+      draw(ReactDOMRe.domElementToObj(canvas), image)
+    | _ => ()
     };
 
   React.useEffect(() => {
@@ -67,9 +70,16 @@ let make = () => {
     addEventListener(window, "resize", handleResize);
     Some(() => removeEventListener(window, "resize", handleResize));
   });
-  <canvas
-    width={string_of_int(windowSize.width)}
-    height={string_of_int(windowSize.height)}
-    ref={ReactDOMRe.Ref.domRef(canvasRef)}
-  />;
+  <div>
+    <canvas
+      width={string_of_int(windowSize.width)}
+      height={string_of_int(windowSize.height)}
+      ref={ReactDOMRe.Ref.domRef(canvasRef)}
+    />
+    <img
+      src=imageSource
+      style={ReactDOMRe.Style.make(~display="none", ())}
+      ref={ReactDOMRe.Ref.domRef(imageRef)}
+    />
+  </div>;
 };
