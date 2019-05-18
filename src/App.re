@@ -1,19 +1,78 @@
+type position = {
+  x: int,
+  y: int,
+};
+
+type imageSize = {
+  width: int,
+  height: int,
+};
+
+type imageScale = {
+  position,
+  imageSize,
+};
+
+let centerFitImage = (canvasSize: imageSize, imageSize: imageSize): imageScale => {
+  let widthHeightRatio =
+    float_of_int(imageSize.width) /. float_of_int(imageSize.height);
+  let heightWidthRatio =
+    float_of_int(imageSize.height) /. float_of_int(imageSize.width);
+  let widthScaledSize = {
+    width: canvasSize.width,
+    height: int_of_float(heightWidthRatio *. float_of_int(canvasSize.width)),
+  };
+  let heightScaledSize = {
+    width: int_of_float(widthHeightRatio *. float_of_int(canvasSize.height)),
+    height: canvasSize.height,
+  };
+  let scaledSize =
+    if (widthScaledSize.height <= canvasSize.height) {
+      widthScaledSize;
+    } else {
+      heightScaledSize;
+    };
+  let position: position = {x: 0, y: 0};
+  {position, imageSize: scaledSize};
+};
+
 let draw = (canvas, image) => {
-  let canvasWidth = canvas##width;
-  let canvasHeight = canvas##height;
-  let min50 = value => max(50, value - 50);
-  let rectWidth = min50(canvasWidth);
-  let rectHeight = min50(canvasHeight);
+  let canvasWidth: int = canvas##width;
+  let canvasHeight: int = canvas##height;
+
+  let imageWidth: int = image##naturalWidth;
+  let imageHeight: int = image##naturalHeight;
+
+  let widthHeightRatio =
+    float_of_int(imageWidth) /. float_of_int(imageHeight);
+
   let context = canvas##getContext("2d");
   context##clearRect(0, 0, canvasWidth, canvasHeight);
-  context##drawImage(image, 0, 0);
+
+  let imageScale =
+    centerFitImage(
+      {width: canvasWidth, height: canvasHeight},
+      {width: imageWidth, height: imageHeight},
+    );
+  context##drawImage(
+    image,
+    imageScale.position.x,
+    imageScale.position.y,
+    imageScale.imageSize.width,
+    imageScale.imageSize.height,
+  );
 
   print_endline(
     "draw(width:"
     ++ string_of_int(canvasWidth)
     ++ ",height:"
     ++ string_of_int(canvasHeight)
-    ++ ")",
+    ++ "). image:"
+    ++ string_of_int(imageWidth)
+    ++ "x"
+    ++ string_of_int(imageHeight)
+    ++ ", aspect:"
+    ++ Js.Float.toString(widthHeightRatio),
   );
 };
 
@@ -55,7 +114,10 @@ let make = () => {
       Js.Nullable.toOption(imageRef->React.Ref.current),
     ) {
     | (Some(canvas), Some(image)) =>
-      draw(ReactDOMRe.domElementToObj(canvas), image)
+      draw(
+        ReactDOMRe.domElementToObj(canvas),
+        ReactDOMRe.domElementToObj(image),
+      )
     | _ => ()
     };
 
