@@ -13,6 +13,14 @@ type imageScale = {
   imageSize,
 };
 
+let getStartCenterPosition = (size: int, maxSize: int): int =>
+  if (size < maxSize) {
+    let remaining: int = maxSize - size;
+    remaining / 2;
+  } else {
+    0;
+  };
+
 let centerFitImage = (canvasSize: imageSize, imageSize: imageSize): imageScale => {
   let widthHeightRatio =
     float_of_int(imageSize.width) /. float_of_int(imageSize.height);
@@ -32,7 +40,10 @@ let centerFitImage = (canvasSize: imageSize, imageSize: imageSize): imageScale =
     } else {
       heightScaledSize;
     };
-  let position: position = {x: 0, y: 0};
+  let position: position = {
+    x: getStartCenterPosition(scaledSize.width, canvasSize.width),
+    y: getStartCenterPosition(scaledSize.height, canvasSize.height),
+  };
   {position, imageSize: scaledSize};
 };
 
