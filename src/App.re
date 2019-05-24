@@ -13,13 +13,18 @@ type rect = {
   size,
 };
 
-let getStartCenterPosition = (size: int, maxSize: int): int =>
+let getStartCenterPositionSingleAxis = (size: int, maxSize: int): int =>
   if (size < maxSize) {
     let remaining: int = maxSize - size;
     remaining / 2;
   } else {
     0;
   };
+
+let getStartCenterPosition = (size: size, maxSize: size): position => {
+  x: getStartCenterPositionSingleAxis(size.width, maxSize.width),
+  y: getStartCenterPositionSingleAxis(size.height, maxSize.height),
+};
 
 let getFillSizeWithAspectRatio = (canvasSize: size, imageSize: size): size => {
   let widthHeightRatio =
@@ -44,12 +49,9 @@ let getFillSizeWithAspectRatio = (canvasSize: size, imageSize: size): size => {
 };
 
 let centerFitImage = (canvasSize: size, imageSize: size): rect => {
-  let scaledSize = getFillSizeWithAspectRatio(canvasSize, imageSize);
-  let position: position = {
-    x: getStartCenterPosition(scaledSize.width, canvasSize.width),
-    y: getStartCenterPosition(scaledSize.height, canvasSize.height),
-  };
-  {position, size: scaledSize};
+  let filledSize = getFillSizeWithAspectRatio(canvasSize, imageSize);
+  let position: position = getStartCenterPosition(filledSize, canvasSize);
+  {position, size: filledSize};
 };
 
 type imageLoadState =
