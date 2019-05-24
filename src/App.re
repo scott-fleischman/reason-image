@@ -3,14 +3,14 @@ type position = {
   y: int,
 };
 
-type imageSize = {
+type size = {
   width: int,
   height: int,
 };
 
-type imageScale = {
+type rect = {
   position,
-  imageSize,
+  size,
 };
 
 let getStartCenterPosition = (size: int, maxSize: int): int =>
@@ -21,7 +21,7 @@ let getStartCenterPosition = (size: int, maxSize: int): int =>
     0;
   };
 
-let centerFitImage = (canvasSize: imageSize, imageSize: imageSize): imageScale => {
+let centerFitImage = (canvasSize: size, imageSize: size): rect => {
   let widthHeightRatio =
     float_of_int(imageSize.width) /. float_of_int(imageSize.height);
   let heightWidthRatio =
@@ -44,7 +44,7 @@ let centerFitImage = (canvasSize: imageSize, imageSize: imageSize): imageScale =
     x: getStartCenterPosition(scaledSize.width, canvasSize.width),
     y: getStartCenterPosition(scaledSize.height, canvasSize.height),
   };
-  {position, imageSize: scaledSize};
+  {position, size: scaledSize};
 };
 
 type imageLoadState =
@@ -73,8 +73,8 @@ let drawCore = (canvas, image) => {
     image,
     imageScale.position.x,
     imageScale.position.y,
-    imageScale.imageSize.width,
-    imageScale.imageSize.height,
+    imageScale.size.width,
+    imageScale.size.height,
   );
 
   print_endline(
