@@ -13,6 +13,15 @@ type rect = {
   size,
 };
 
+type scaleFactor = {scale: float};
+
+let inverseScaleFactor = (scaleFactor: scaleFactor): scaleFactor =>
+  if (scaleFactor.scale == 0.0) {
+    scaleFactor;
+  } else {
+    {scale: 1.0 /. scaleFactor.scale};
+  };
+
 let getStartCenterPositionSingleAxis = (size: int, maxSize: int): int =>
   if (size < maxSize) {
     let remaining: int = maxSize - size;
@@ -26,77 +35,66 @@ let getStartCenterPosition = (size: size, maxSize: size): position => {
   y: getStartCenterPositionSingleAxis(size.height, maxSize.height),
 };
 
-let getFillSizeWithAspectRatio = (canvasSize: size, imageSize: size): size => {
-  let widthHeightRatio =
-    float_of_int(imageSize.width) /. float_of_int(imageSize.height);
-  let heightWidthRatio =
-    float_of_int(imageSize.height) /. float_of_int(imageSize.width);
-  let widthScaledSize = {
-    width: canvasSize.width,
-    height: int_of_float(heightWidthRatio *. float_of_int(canvasSize.width)),
-  };
-  let heightScaledSize = {
-    width: int_of_float(widthHeightRatio *. float_of_int(canvasSize.height)),
-    height: canvasSize.height,
-  };
-  let scaledSize =
-    if (widthScaledSize.height <= canvasSize.height) {
-      widthScaledSize;
+let getFullSizeScaleFactorWithAspectRatio =
+    (canvasSize: size, imageSize: size): scaleFactor => {
+  let widthRatio: float =
+    float_of_int(canvasSize.width) /. float_of_int(imageSize.width);
+  let heightRatio: float =
+    float_of_int(canvasSize.height) /. float_of_int(imageSize.height);
+  let scale: float =
+    if (widthRatio
+        *. float_of_int(imageSize.height) <= float_of_int(canvasSize.height)) {
+      widthRatio;
     } else {
-      heightScaledSize;
+      heightRatio;
     };
-  scaledSize;
-};
-
-let centerFitImage = (canvasSize: size, imageSize: size): rect => {
-  let filledSize = getFillSizeWithAspectRatio(canvasSize, imageSize);
-  let filledCenterPosition: position =
-    getStartCenterPosition(filledSize, canvasSize);
-  {position: filledCenterPosition, size: filledSize};
+  {scale: scale};
 };
 
 type imageLoadState =
   | ImageNotLoaded
   | ImageLoaded;
 
+let scaleSingle = (length: int, scaleFactor: scaleFactor): int => {
+  let lengthFloat = float_of_int(length);
+  let scaledFloat = lengthFloat *. scaleFactor.scale;
+  int_of_float(scaledFloat);
+};
+
+let scaleSize = (size: size, scaleFactor: scaleFactor): size => {
+  width: scaleSingle(size.width, scaleFactor),
+  height: scaleSingle(size.height, scaleFactor),
+};
+
 let drawCore = (canvas, image) => {
-  let canvasWidth: int = canvas##width;
-  let canvasHeight: int = canvas##height;
-
-  let imageWidth: int = image##naturalWidth;
-  let imageHeight: int = image##naturalHeight;
-
-  let widthHeightRatio =
-    float_of_int(imageWidth) /. float_of_int(imageHeight);
+  let canvasSize: size = {width: canvas##width, height: canvas##height};
+  let imageSize: size = {
+    width: image##naturalWidth,
+    height: image##naturalHeight,
+  };
 
   let context = canvas##getContext("2d");
-  context##clearRect(0, 0, canvasWidth, canvasHeight);
+  context##clearRect(0, 0, canvasSize.width, canvasSize.height);
 
-  let imageScale =
-    centerFitImage(
-      {width: canvasWidth, height: canvasHeight},
-      {width: imageWidth, height: imageHeight},
-    );
+  let scaleFactor: scaleFactor =
+    getFullSizeScaleFactorWithAspectRatio(canvasSize, imageSize);
+  let scaledCanvasSize =
+    scaleSize(canvasSize, inverseScaleFactor(scaleFactor));
+  let centeredPosition = getStartCenterPosition(imageSize, scaledCanvasSize);
+
+  context##save();
+  context##imageSmoothingQuality #= "high";
+  context##scale(scaleFactor, scaleFactor);
   context##drawImage(
     image,
-    imageScale.position.x,
-    imageScale.position.y,
-    imageScale.size.width,
-    imageScale.size.height,
+    centeredPosition.x,
+    centeredPosition.y,
+    imageSize.width,
+    imageSize.height,
   );
+  context##restore();
 
-  print_endline(
-    "draw(width:"
-    ++ string_of_int(canvasWidth)
-    ++ ",height:"
-    ++ string_of_int(canvasHeight)
-    ++ "). image:"
-    ++ string_of_int(imageWidth)
-    ++ "x"
-    ++ string_of_int(imageHeight)
-    ++ ", aspect:"
-    ++ Js.Float.toString(widthHeightRatio),
-  );
+  Js.log4("draw()", scaleFactor, imageSize, scaledCanvasSize);
 };
 
 let draw = (imageLoadState: imageLoadState, canvas, image) => {
@@ -106,7 +104,9 @@ let draw = (imageLoadState: imageLoadState, canvas, image) => {
   };
 };
 
-let imageSource: string = "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/1280px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg";
+let portraitSource: string = "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/1280px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg";
+let landscapeSource: string = "https://upload.wikimedia.org/wikipedia/commons/d/d1/Kew_Gardens_Palm_House%2C_London_-_July_2009.jpg";
+let imageSource: string = landscapeSource;
 
 [@react.component]
 let make = () => {
