@@ -98,36 +98,11 @@ let draw = (imageLoadState: imageLoadState, canvas, image) => {
   };
 };
 
-type windowSize = {
-  width: int,
-  height: int,
-};
-
 let imageSource: string = "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/1280px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg";
-
-[@bs.val] external window: Dom.window = "";
-external windowToJsObj: Dom.window => Js.t({..}) = "%identity";
-
-[@bs.send]
-external addEventListener:
-  (Dom.window, string, Dom.event_like('a) => unit) => unit =
-  "";
-
-[@bs.send]
-external removeEventListener:
-  (Dom.window, string, Dom.event_like('a) => unit) => unit =
-  "";
-
-let getWindowSize = () => {
-  let window = windowToJsObj(window);
-  let width = window##innerWidth;
-  let height = window##innerHeight;
-  {width, height};
-};
 
 [@react.component]
 let make = () => {
-  let (windowSize, setWindowSize) = React.useState(getWindowSize);
+  let windowSize = WindowResize.useWindowResize();
   let (imageLoadState, setImageLoadState) =
     React.useState(_ => ImageNotLoaded);
   let canvasRef = React.useRef(Js.Nullable.null);
@@ -147,13 +122,6 @@ let make = () => {
     | _ => ()
     };
     None;
-  });
-  React.useEffect(() => {
-    let handleResize = _ => {
-      setWindowSize(_ => getWindowSize());
-    };
-    addEventListener(window, "resize", handleResize);
-    Some(() => removeEventListener(window, "resize", handleResize));
   });
   <div>
     <canvas
