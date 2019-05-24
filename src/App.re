@@ -43,14 +43,23 @@ let getStartCenterPosition = (size: size, maxSize: size): position => {
   y: getStartCenterPositionSingleAxis(size.height, maxSize.height),
 };
 
+// Get the scale factor to make the image fill the canvas and maintain its aspect ratio
 let getFullSizeScaleFactorWithAspectRatio =
     (canvasSize: size, imageSize: size): scaleFactor => {
   let widthRatio: float = canvasSize.width /. imageSize.width;
-  let heightRatio: float = canvasSize.height /. imageSize.height;
   let scale: float =
+    // If we apply the scale factor from the width ratio to the image height,
+    // and that scaled image height fits in the canvas, then use this ratio.
+    // The scaled width will be full canvas width
+    // The scaled height will <= the canvas height.
     if (widthRatio *. imageSize.height <= canvasSize.height) {
       widthRatio;
     } else {
+      // Else the height is too tall based on the width scaling.
+      // So scale based on the height difference.
+      // The scaled width will be <= the canvas width.
+      // The scaled height will be the full canvas height.
+      let heightRatio: float = canvasSize.height /. imageSize.height;
       heightRatio;
     };
   {scale: scale};
