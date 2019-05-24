@@ -83,25 +83,27 @@ let drawCore = (canvas, image) => {
   let context = canvas##getContext("2d");
   context##clearRect(0, 0, canvasSize.width, canvasSize.height);
 
-  let scaleFactor: scaleFactor =
+  let imageToCanvasScaleFactor: scaleFactor =
     getFullSizeScaleFactorWithAspectRatio(canvasSize, imageSize);
-  let scaledCanvasSize =
-    scaleSize(canvasSize, inverseScaleFactor(scaleFactor));
-  let centeredPosition = getStartCenterPosition(imageSize, scaledCanvasSize);
+  let imageSizeScaledToCanvas =
+    scaleSize(imageSize, imageToCanvasScaleFactor);
+  let centeredPosition =
+    getStartCenterPosition(imageSizeScaledToCanvas, canvasSize);
 
+  let zoomScaleFactor: scaleFactor = {scale: 1.0};
   context##save();
   context##imageSmoothingQuality #= "high";
-  context##scale(scaleFactor, scaleFactor);
+  context##scale(zoomScaleFactor.scale, zoomScaleFactor.scale);
   context##drawImage(
     image,
     centeredPosition.x,
     centeredPosition.y,
-    imageSize.width,
-    imageSize.height,
+    imageSizeScaledToCanvas.width,
+    imageSizeScaledToCanvas.height,
   );
   context##restore();
 
-  Js.log4("draw()", scaleFactor, imageSize, scaledCanvasSize);
+  Js.log4("draw()", imageSize, imageSizeScaledToCanvas, canvasSize);
 };
 
 let draw = (imageLoadState: imageLoadState, canvas, image) => {
