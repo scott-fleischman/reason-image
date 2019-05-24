@@ -50,8 +50,9 @@ let getFillSizeWithAspectRatio = (canvasSize: size, imageSize: size): size => {
 
 let centerFitImage = (canvasSize: size, imageSize: size): rect => {
   let filledSize = getFillSizeWithAspectRatio(canvasSize, imageSize);
-  let position: position = getStartCenterPosition(filledSize, canvasSize);
-  {position, size: filledSize};
+  let filledCenterPosition: position =
+    getStartCenterPosition(filledSize, canvasSize);
+  {position: filledCenterPosition, size: filledSize};
 };
 
 type imageLoadState =
