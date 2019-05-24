@@ -47,7 +47,11 @@ let centerFitImage = (canvasSize: imageSize, imageSize: imageSize): imageScale =
   {position, imageSize: scaledSize};
 };
 
-let draw = (canvas, image) => {
+type imageLoadState =
+  | ImageNotLoaded
+  | ImageLoaded;
+
+let drawCore = (canvas, image) => {
   let canvasWidth: int = canvas##width;
   let canvasHeight: int = canvas##height;
 
@@ -87,6 +91,13 @@ let draw = (canvas, image) => {
   );
 };
 
+let draw = (imageLoadState: imageLoadState, canvas, image) => {
+  switch (imageLoadState) {
+  | ImageNotLoaded => ()
+  | ImageLoaded => drawCore(canvas, image)
+  };
+};
+
 type windowSize = {
   width: int,
   height: int,
@@ -117,23 +128,24 @@ let getWindowSize = () => {
 [@react.component]
 let make = () => {
   let (windowSize, setWindowSize) = React.useState(getWindowSize);
+  let (imageLoadState, setImageLoadState) =
+    React.useState(_ => ImageNotLoaded);
   let canvasRef = React.useRef(Js.Nullable.null);
   let imageRef = React.useRef(Js.Nullable.null);
-  let drawOnCanvas = () =>
+
+  React.useEffect(() => {
     switch (
       Js.Nullable.toOption(canvasRef->React.Ref.current),
       Js.Nullable.toOption(imageRef->React.Ref.current),
     ) {
     | (Some(canvas), Some(image)) =>
       draw(
+        imageLoadState,
         ReactDOMRe.domElementToObj(canvas),
         ReactDOMRe.domElementToObj(image),
       )
     | _ => ()
     };
-
-  React.useEffect(() => {
-    drawOnCanvas();
     None;
   });
   React.useEffect(() => {
@@ -153,6 +165,7 @@ let make = () => {
       src=imageSource
       style={ReactDOMRe.Style.make(~display="none", ())}
       ref={ReactDOMRe.Ref.domRef(imageRef)}
+      onLoad={_ => setImageLoadState(_ => ImageLoaded)}
     />
   </div>;
 };
