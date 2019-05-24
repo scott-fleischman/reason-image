@@ -111,8 +111,8 @@ let draw = (imageLoadState: imageLoadState, canvas, image) => {
   };
 };
 
-let portraitSource: string = "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/1280px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg";
-let landscapeSource: string = "https://upload.wikimedia.org/wikipedia/commons/d/d1/Kew_Gardens_Palm_House%2C_London_-_July_2009.jpg";
+let portraitSource: string = "https://upload.wikimedia.org/wikipedia/commons/a/a8/Van_Gogh_Self-Portrait_with_Straw_Hat_1887-Metropolitan.jpg";
+let landscapeSource: string = "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/2560px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg";
 
 let getImageSource = (imageKind: imageKind) => {
   switch (imageKind) {
