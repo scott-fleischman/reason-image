@@ -15,6 +15,14 @@ type rect = {
 
 type scaleFactor = {scale: float};
 
+type imageLoadState =
+  | ImageNotLoaded
+  | ImageLoaded;
+
+type imageKind =
+  | ImagePortrait
+  | ImageLandscape;
+
 let inverseScaleFactor = (scaleFactor: scaleFactor): scaleFactor =>
   if (scaleFactor.scale == 0.0) {
     scaleFactor;
@@ -50,10 +58,6 @@ let getFullSizeScaleFactorWithAspectRatio =
     };
   {scale: scale};
 };
-
-type imageLoadState =
-  | ImageNotLoaded
-  | ImageLoaded;
 
 let scaleSingle = (length: int, scaleFactor: scaleFactor): int => {
   let lengthFloat = float_of_int(length);
@@ -106,15 +110,33 @@ let draw = (imageLoadState: imageLoadState, canvas, image) => {
 
 let portraitSource: string = "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/1280px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg";
 let landscapeSource: string = "https://upload.wikimedia.org/wikipedia/commons/d/d1/Kew_Gardens_Palm_House%2C_London_-_July_2009.jpg";
-let imageSource: string = landscapeSource;
+
+let getImageSource = (imageKind: imageKind) => {
+  switch (imageKind) {
+  | ImagePortrait => portraitSource
+  | ImageLandscape => landscapeSource
+  };
+};
+
+let switchImage = (imageKind: imageKind) => {
+  switch (imageKind) {
+  | ImagePortrait => ImageLandscape
+  | ImageLandscape => ImagePortrait
+  };
+};
 
 [@react.component]
 let make = () => {
   let windowSize = WindowResize.useWindowResize();
   let (imageLoadState, setImageLoadState) =
     React.useState(_ => ImageNotLoaded);
+  let (imageKind, setImageKind) = React.useState(_ => ImagePortrait);
   let canvasRef = React.useRef(Js.Nullable.null);
   let imageRef = React.useRef(Js.Nullable.null);
+  let changeImage = _ => {
+    setImageKind(switchImage);
+    setImageLoadState(_ => ImageNotLoaded);
+  };
 
   React.useEffect(() => {
     switch (
@@ -132,13 +154,24 @@ let make = () => {
     None;
   });
   <div>
+    <button
+      style={ReactDOMRe.Style.make(
+        ~position="fixed",
+        ~top="0",
+        ~left="0",
+        ~fontSize="40pt",
+        (),
+      )}
+      onClick=changeImage>
+      {ReasonReact.string("Switch image")}
+    </button>
     <canvas
       width={string_of_int(windowSize.width)}
       height={string_of_int(windowSize.height)}
       ref={ReactDOMRe.Ref.domRef(canvasRef)}
     />
     <img
-      src=imageSource
+      src={getImageSource(imageKind)}
       style={ReactDOMRe.Style.make(~display="none", ())}
       ref={ReactDOMRe.Ref.domRef(imageRef)}
       onLoad={_ => setImageLoadState(_ => ImageLoaded)}
