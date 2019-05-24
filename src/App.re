@@ -21,7 +21,7 @@ let getStartCenterPosition = (size: int, maxSize: int): int =>
     0;
   };
 
-let centerFitImage = (canvasSize: size, imageSize: size): rect => {
+let getFillSizeWithAspectRatio = (canvasSize: size, imageSize: size): size => {
   let widthHeightRatio =
     float_of_int(imageSize.width) /. float_of_int(imageSize.height);
   let heightWidthRatio =
@@ -40,6 +40,11 @@ let centerFitImage = (canvasSize: size, imageSize: size): rect => {
     } else {
       heightScaledSize;
     };
+  scaledSize;
+};
+
+let centerFitImage = (canvasSize: size, imageSize: size): rect => {
+  let scaledSize = getFillSizeWithAspectRatio(canvasSize, imageSize);
   let position: position = {
     x: getStartCenterPosition(scaledSize.width, canvasSize.width),
     y: getStartCenterPosition(scaledSize.height, canvasSize.height),
