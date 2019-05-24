@@ -1,11 +1,11 @@
 type position = {
-  x: int,
-  y: int,
+  x: float,
+  y: float,
 };
 
 type size = {
-  width: int,
-  height: int,
+  width: float,
+  height: float,
 };
 
 type rect = {
@@ -30,12 +30,12 @@ let inverseScaleFactor = (scaleFactor: scaleFactor): scaleFactor =>
     {scale: 1.0 /. scaleFactor.scale};
   };
 
-let getStartCenterPositionSingleAxis = (size: int, maxSize: int): int =>
+let getStartCenterPositionSingleAxis = (size: float, maxSize: float): float =>
   if (size < maxSize) {
-    let remaining: int = maxSize - size;
-    remaining / 2;
+    let remaining: float = maxSize -. size;
+    remaining /. 2.0;
   } else {
-    0;
+    0.0;
   };
 
 let getStartCenterPosition = (size: size, maxSize: size): position => {
@@ -45,13 +45,10 @@ let getStartCenterPosition = (size: size, maxSize: size): position => {
 
 let getFullSizeScaleFactorWithAspectRatio =
     (canvasSize: size, imageSize: size): scaleFactor => {
-  let widthRatio: float =
-    float_of_int(canvasSize.width) /. float_of_int(imageSize.width);
-  let heightRatio: float =
-    float_of_int(canvasSize.height) /. float_of_int(imageSize.height);
+  let widthRatio: float = canvasSize.width /. imageSize.width;
+  let heightRatio: float = canvasSize.height /. imageSize.height;
   let scale: float =
-    if (widthRatio
-        *. float_of_int(imageSize.height) <= float_of_int(canvasSize.height)) {
+    if (widthRatio *. imageSize.height <= canvasSize.height) {
       widthRatio;
     } else {
       heightRatio;
@@ -59,15 +56,12 @@ let getFullSizeScaleFactorWithAspectRatio =
   {scale: scale};
 };
 
-let scaleSingle = (length: int, scaleFactor: scaleFactor): int => {
-  let lengthFloat = float_of_int(length);
-  let scaledFloat = lengthFloat *. scaleFactor.scale;
-  int_of_float(scaledFloat);
-};
+let scaleValue = (value: float, scaleFactor: scaleFactor): float =>
+  value *. scaleFactor.scale;
 
 let scaleSize = (size: size, scaleFactor: scaleFactor): size => {
-  width: scaleSingle(size.width, scaleFactor),
-  height: scaleSingle(size.height, scaleFactor),
+  width: scaleValue(size.width, scaleFactor),
+  height: scaleValue(size.height, scaleFactor),
 };
 
 let drawCore = (canvas, image) => {
