@@ -92,18 +92,18 @@ let drawCore = (canvas, image) => {
 
   let zoomScaleFactor: scaleFactor = {scale: 1.0};
   context##save();
+  context##imageSmoothingEnabled #= true;
   context##imageSmoothingQuality #= "high";
-  context##scale(zoomScaleFactor.scale, zoomScaleFactor.scale);
-  context##drawImage(
-    image,
-    centeredPosition.x,
-    centeredPosition.y,
-    imageSizeScaledToCanvas.width,
-    imageSizeScaledToCanvas.height,
+  context##translate(centeredPosition.x, centeredPosition.y);
+  context##scale(
+    imageToCanvasScaleFactor.scale,
+    imageToCanvasScaleFactor.scale,
   );
+  context##scale(zoomScaleFactor.scale, zoomScaleFactor.scale);
+  context##drawImage(image, 0, 0);
   context##restore();
 
-  Js.log4("draw()", imageSize, imageSizeScaledToCanvas, canvasSize);
+  Js.log4("draw()", imageSize, canvasSize, centeredPosition);
 };
 
 let draw = (imageLoadState: imageLoadState, canvas, image) => {
