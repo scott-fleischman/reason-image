@@ -87,23 +87,41 @@ let drawCore = (canvas, image) => {
     getFullSizeScaleFactorWithAspectRatio(canvasSize, imageSize);
   let imageSizeScaledToCanvas =
     scaleSize(imageSize, imageToCanvasScaleFactor);
-  let centeredPosition =
+  let centeredPositionOnCanvas =
     getStartCenterPosition(imageSizeScaledToCanvas, canvasSize);
 
   let zoomScaleFactor: scaleFactor = {scale: 1.0};
+  let zoomPosition: position = {x: 0.0, y: 0.0};
+
   context##save();
+
+  // image smoothing
   context##imageSmoothingEnabled #= true;
   context##imageSmoothingQuality #= "high";
-  context##translate(centeredPosition.x, centeredPosition.y);
+
+  // center image on canvas
+  // translate in canvas coordinates
+  context##translate(centeredPositionOnCanvas.x, centeredPositionOnCanvas.y);
+
+  // center image around zoom point
+  // translate in canvas coordinates
+  context##translate(zoomPosition.x, zoomPosition.y);
+
+  // scale by pinch zoom factor
+  context##scale(zoomScaleFactor.scale, zoomScaleFactor.scale);
+
+  // scale image to canvas size
   context##scale(
     imageToCanvasScaleFactor.scale,
     imageToCanvasScaleFactor.scale,
   );
-  context##scale(zoomScaleFactor.scale, zoomScaleFactor.scale);
+
+  // draw image at normal size using context transformations
   context##drawImage(image, 0, 0);
+
   context##restore();
 
-  Js.log4("draw()", imageSize, canvasSize, centeredPosition);
+  Js.log4("draw()", imageSize, canvasSize, centeredPositionOnCanvas);
 };
 
 let draw = (imageLoadState: imageLoadState, canvas, image) => {
